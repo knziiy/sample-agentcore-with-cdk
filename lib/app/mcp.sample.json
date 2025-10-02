@@ -1,0 +1,46 @@
+{
+  "_comment": "Generic AgentCore Runtime Configuration",
+  "_agentcore_requirements": {
+    "platform": "linux/arm64",
+    "port": 8080,
+    "endpoints": {
+      "/ping": "GET - Health check endpoint",
+      "/invocations": "POST - Main inference endpoint"
+    },
+    "aws_credentials": "Required for Bedrock model access and S3 operations"
+  },
+  "mcpServers": {
+    "time": {
+      "command": "uvx",
+      "args": ["mcp-server-time"]
+    },
+    "awslabs.aws-documentation-mcp-server": {
+      "command": "uvx",
+      "args": ["awslabs.aws-documentation-mcp-server@latest"]
+    },
+    "awslabs.bedrock-kb-retrieval-mcp-server": {
+      "command": "uvx",
+      "args": ["awslabs.bedrock-kb-retrieval-mcp-server@latest"],
+      "env": {
+        "AWS_REGION": "us-east-1",
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "KB_INCLUSION_TAG_KEY" : "KB_ALLOW_FROM_MCP",
+        "BEDROCK_KB_RERANKING_ENABLED": "false"
+      }
+    },
+    "awslabs.postgres-mcp-server": {
+      "command": "uvx",
+      "args": [
+        "awslabs.postgres-mcp-server@latest",
+        "--resource_arn", "arn:aws:rds:us-east-1:YOUR-ACCOUNT-ID:cluster:your-aurora-cluster",
+        "--secret_arn", "arn:aws:secretsmanager:us-east-1:YOUR-ACCOUNT-ID:secret:your-db-secret-name-XXXXXX",
+        "--database", "db_name",
+        "--region", "us-east-1",
+        "--readonly", "True"
+      ],
+      "env": {
+        "AWS_REGION": "us-east-1"
+      }
+    }
+  }
+}

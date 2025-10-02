@@ -1,0 +1,9 @@
+# CDK
+*.js
+*.d.ts
+node_modules/
+cdk.out/
+cdk.context.json
+
+# OS
+.DS_Store
