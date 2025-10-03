@@ -152,6 +152,25 @@ export class AgentCoreRole extends Construct {
         `arn:aws:bedrock:${region}:${accountId}:*`
       ]
     }));
+    
+    // Code Interpreterの権限
+    this.role.addToPolicy(new iam.PolicyStatement({
+        sid: 'CodeInterpreter',
+        effect: iam.Effect.ALLOW,
+        actions: [
+          'bedrock-agentcore:CreateCodeInterpreter',
+          'bedrock-agentcore:StartCodeInterpreterSession',
+          'bedrock-agentcore:InvokeCodeInterpreter',
+          'bedrock-agentcore:StopCodeInterpreterSession',
+          'bedrock-agentcore:DeleteCodeInterpreter',
+          'bedrock-agentcore:ListCodeInterpreters',
+          'bedrock-agentcore:GetCodeInterpreter',
+          'bedrock-agentcore:GetCodeInterpreterSession',
+          'bedrock-agentcore:ListCodeInterpreterSessions',
+        ],
+        resources: ['*'],
+      })
+    );
   }
 
   /**
