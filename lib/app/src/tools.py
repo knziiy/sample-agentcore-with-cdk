@@ -139,7 +139,7 @@ class ToolManager:
 
         return code_interpreter_tools
 
-    async def get_gateway_tools(self) -> list[Any]:
+    def get_gateway_tools(self) -> list[Any]:
         gateway_url = os.environ.get("GATEWAY_URL")
         if not gateway_url:
             logger.warning("GATEWAY_URL environment variable not set. Skipping gateway tools.")
@@ -155,7 +155,7 @@ class ToolManager:
             auth_flow="M2M",
             force_authentication=False,
         )
-        async def get_mcp_client_from_gateway(access_token: str):
+        def get_mcp_client_from_gateway(access_token: str):
             def create_streamable_http_transport():
                 return streamablehttp_client(
                     gateway_url,
@@ -175,14 +175,14 @@ class ToolManager:
                     self.gateway_client = None
                 return []
         
-        return await get_mcp_client_from_gateway()
+        return get_mcp_client_from_gateway()
 
-    async def get_all_tools(self) -> list[Any]:
+    def get_all_tools(self) -> list[Any]:
         """Get all available tools (MCP + built-in + code interpreter)"""
         mcp_tools = self.load_mcp_tools()
         upload_tool = self.get_upload_tool()
         code_interpreter_tools = self.get_code_interpreter_tool()
-        gateway_tools = await self.get_gateway_tools()
+        gateway_tools = self.get_gateway_tools()
 
         all_tools = mcp_tools + [upload_tool] + code_interpreter_tools + gateway_tools
         logger.info(f"Total tools loaded: {len(all_tools)} (MCP: {len(mcp_tools)}, Built-in: 1, Code Interpreter: {len(code_interpreter_tools)}, Gateway: {len(gateway_tools)})")

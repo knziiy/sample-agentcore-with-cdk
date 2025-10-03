@@ -101,19 +101,41 @@ npx cdk destroy
 
 ## MCPサーバ設定例
 
-`lib/app/mcp.json`には基本的なtimeサーバのみが含まれています。以下のような追加MCPサーバを設定できます：
+`lib/app/mcp.json`には基本的なtimeサーバのみが含まれています。以下のようにMCPサーバを設定できます：
 
-### Knowledge Baseアクセス制御
+### 認証が不要なMCPサーバ
+
+例: AWSドキュメントの検索が可能なMCPサーバ
+```json
+{
+  "mcpServers": {
+    "awslabs.aws-documentation-mcp-server": {
+        "command": "uvx",
+        "args": ["awslabs.aws-documentation-mcp-server@latest"],
+        "env": {
+          "FASTMCP_LOG_LEVEL": "ERROR"
+        },
+        "disabled": false,
+        "autoApprove": []
+    
+  }
+}
+```
+
+### 認証が必要なMCPサーバ
+
+Amazon Bedrock Knowledge Bases で構築されたナレッジベースを参照するMCPサーバと、PostgreSQLデータベースを参照するMCPサーバを設定すると、  
+MCPサーバに必要なIAM権限がAgentCore Runtime用のIAMロールに自動的に付与されます。
+
+##### Knowledge Base Retrieval MCP
 
 Knowledge Baseへのアクセスは、`mcp.json`の設定で制御されます。`parameters.ts`で`useKnowledgeBase: true`を設定すると、Knowledge Base関連の IAM 権限が付与されます。
 
 実際にアクセス可能なKnowledge Baseは、以下の例のように`mcp.json`の`KB_INCLUSION_TAG_KEY`で指定したタグの値が"true"に設定されたKnowledge Baseのみが検索対象になります。
 
-AWS コンソールでKnowledge Baseにタグを設定：
+AWS コンソールでKnowledge Baseにタグを設定してください。  
 - タグキー: `KB_ALLOW_FROM_MCP`
 - タグ値: `true`
-
-### Knowledge Base Retrieval MCP
 
 以下をそのまま `mcp.json` に追加し、検索対象としたいナレッジベースに `KB_ALLOW_FROM_MCP=true` のタグを付与してください。
 
@@ -134,7 +156,13 @@ AWS コンソールでKnowledge Baseにタグを設定：
 }
 ```
 
-### PostgreSQL MCP
+`parameters.ts`には以下のように設定します。
+
+```typescript
+  useKnowledgeBase: true,
+```
+
+#### PostgreSQL MCP
 
 Amazon Aurora/Aurora ServerlessでDataAPIを有効化したPostgreSQLデータベースを用意することで、PostgreSQL MCPを介したDB参照が可能となります。
 
@@ -158,3 +186,17 @@ Amazon Aurora/Aurora ServerlessでDataAPIを有効化したPostgreSQLデータ�
   }
 }
 ```
+
+
+`parameters.ts`には以下のように設定します。
+
+```typescript
+  postgresqlConfig: {
+    clusterArn: "arn:aws:rds:us-east-1:YOUR-ACCOUNT-ID:cluster:your-aurora-cluster",
+    secretArn: "arn:aws:secretsmanager:us-east-1:YOUR-ACCOUNT-ID:secret:your-db-secret-name-XXXXXX",
+  }
+```
+
+`clusterArn` : 参照するAuroraClusterのARNを指定します。
+`secretArn` : DataAPIで認証するために必要なSecretsManagerのsecretのARNを指定します。
+

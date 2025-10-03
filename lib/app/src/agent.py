@@ -43,15 +43,15 @@ class AgentManager:
             combined_system_prompt = get_system_prompt(system_prompt)
 
             # Get all tools
-            tools = await self.tool_manager.get_all_tools()
+            tools = self.tool_manager.get_all_tools()
 
             # Create boto3 session and Bedrock model
             session = boto3.Session(region_name=region)
             bedrock_model = BedrockModel(
                 model_id=model_id,
                 boto_session=session,
-                cache_prompt="default",
-                cache_tools="default",
+                # cache_prompt="default",
+                # cache_tools="default",
             )
 
             # Process messages and prompt using utility functions
