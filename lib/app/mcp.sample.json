@@ -7,31 +7,6 @@
     "awslabs.aws-documentation-mcp-server": {
       "command": "uvx",
       "args": ["awslabs.aws-documentation-mcp-server@latest"]
-    },
-    "awslabs.bedrock-kb-retrieval-mcp-server": {
-      "command": "uvx",
-      "args": ["awslabs.bedrock-kb-retrieval-mcp-server@latest"],
-      "env": {
-        "AWS_REGION": "us-east-1",
-        "FASTMCP_LOG_LEVEL": "ERROR",
-        "KB_INCLUSION_TAG_KEY" : "KB_ALLOW_FROM_MCP",
-        "BEDROCK_KB_RERANKING_ENABLED": "false"
-      }
-    },
-    "awslabs.postgres-mcp-server": {
-      "command": "uvx",
-      "args": [
-        "awslabs.postgres-mcp-server@latest",
-        "--resource_arn", "arn:aws:rds:us-east-1:YOUR-ACCOUNT-ID:cluster:your-aurora-cluster",
-        "--secret_arn", "arn:aws:secretsmanager:us-east-1:YOUR-ACCOUNT-ID:secret:your-db-secret-name-XXXXXX",
-        "--region", "us-east-1",
-        "--database", "db_name",
-        "--readonly", "True"
-      ],
-      "env": {
-        "AWS_REGION": "us-east-1"
-      },
-      "description": "--region is required."
     }
   }
 }
