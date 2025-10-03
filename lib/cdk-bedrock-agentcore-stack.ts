@@ -45,6 +45,11 @@ export class CdkBedrockAgentcoreStack extends cdk.Stack {
 
     runtime.node.addDependency(agentCoreRole);
 
+    new cdk.CfnOutput(this, 'RuntimeArn', {
+      value: runtime.attrAgentRuntimeArn,
+      description: 'AgentCore Runtime ARN',
+    });
+
     new cdk.CfnOutput(this, 'RuntimeId', {
       value: runtime.attrAgentRuntimeId,
       description: 'AgentCore Runtime ID',

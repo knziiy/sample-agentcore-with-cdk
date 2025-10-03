@@ -16,9 +16,11 @@ export class AgentCoreRole extends Construct {
     const accountId = cdk.Stack.of(this).account;
 
     // AgentCore Runtime用のIAMロール
+    // runtimeNameを含めることで、複数のRuntimeが独立したロールを持つ
     this.role = new iam.Role(this, 'BedrockAgentCoreRole', {
+      roleName: `BedrockAgentCore-${params.runtimeName}-Role`,
       assumedBy: new iam.ServicePrincipal('bedrock-agentcore.amazonaws.com'),
-      description: 'IAM role for Bedrock AgentCore Runtime',
+      description: `IAM role for Bedrock AgentCore Runtime: ${params.runtimeName}`,
     });
 
     // 基本権限の追加

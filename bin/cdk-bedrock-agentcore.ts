@@ -6,6 +6,9 @@ import { actualParameters } from '../parameters';
 
 const app = new cdk.App();
 
-new CdkBedrockAgentcoreStack(app, 'CdkBedrockAgentcoreStack', {
+// runtimeNameをStack名に含めることで、複数のRuntimeを独立してデプロイ可能にする
+const stackName = `CdkBedrockAgentcore-${actualParameters.runtimeName}-Stack`;
+
+new CdkBedrockAgentcoreStack(app, stackName, {
   parameters: actualParameters,
 });
