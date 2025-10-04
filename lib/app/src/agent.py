@@ -17,15 +17,32 @@ from .utils import process_messages, process_prompt
 logger = logging.getLogger(__name__)
 
 
+class IterationLimitExceededError(Exception):
+    """反復制限を超えた場合に発生する例外"""
+    pass
+
+
 class AgentManager:
     """Manages Strands agent creation and execution."""
 
     def __init__(self):
         self.tool_manager = ToolManager()
+        self.max_iterations = 20
+        self.iteration_count = 0
 
     def set_session_info(self, session_id: str, trace_id: str):
         """Set session and trace IDs"""
         self.tool_manager.set_session_info(session_id, trace_id)
+        # Reset iteration count for new session
+        self.iteration_count = 0
+
+    def iteration_limit_handler(self, **ev):
+        if ev.get("start_event_loop"):
+            self.iteration_count += 1
+            if self.iteration_count > self.max_iterations:
+                raise IterationLimitExceededError(  
+                    f"イベントループが最大反復回数({self.max_iterations})に達しました。管理者にお問い合わせください。"  
+                )  
 
     async def process_request_streaming(
         self,
@@ -50,8 +67,8 @@ class AgentManager:
             bedrock_model = BedrockModel(
                 model_id=model_id,
                 boto_session=session,
-                # cache_prompt="default",
-                # cache_tools="default",
+                cache_prompt="default",
+                cache_tools="default",
             )
 
             # Process messages and prompt using utility functions
@@ -64,6 +81,7 @@ class AgentManager:
                 messages=processed_messages,
                 model=bedrock_model,
                 tools=tools,
+                callback_handler=self.iteration_limit_handler,
             )
 
             async for event in agent.stream_async(processed_prompt):
