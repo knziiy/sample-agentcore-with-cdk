@@ -9,7 +9,7 @@ import boto3
 from strands import Agent as StrandsAgent
 from strands.models import BedrockModel
 
-from .config import extract_model_info, get_system_prompt
+from .config import extract_model_info, get_max_iterations, get_system_prompt, supports_prompt_cache, supports_tools_cache
 from .tools import ToolManager
 from .types import Message, ModelInfo
 from .utils import process_messages, process_prompt
@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 class IterationLimitExceededError(Exception):
-    """反復制限を超えた場合に発生する例外"""
+    """Exception raised when iteration limit is exceeded"""
+
     pass
 
 
@@ -27,7 +28,7 @@ class AgentManager:
 
     def __init__(self):
         self.tool_manager = ToolManager()
-        self.max_iterations = 20
+        self.max_iterations = get_max_iterations()
         self.iteration_count = 0
 
     def set_session_info(self, session_id: str, trace_id: str):
@@ -37,12 +38,12 @@ class AgentManager:
         self.iteration_count = 0
 
     def iteration_limit_handler(self, **ev):
+        if ev.get("init_event_loop"):
+            self.iteration_count = 0
         if ev.get("start_event_loop"):
             self.iteration_count += 1
             if self.iteration_count > self.max_iterations:
-                raise IterationLimitExceededError(  
-                    f"イベントループが最大反復回数({self.max_iterations})に達しました。管理者にお問い合わせください。"  
-                )  
+                raise IterationLimitExceededError(f"Event loop reached maximum iteration count ({self.max_iterations}). Please contact the administrator.")
 
     async def process_request_streaming(
         self,
@@ -64,12 +65,21 @@ class AgentManager:
 
             # Create boto3 session and Bedrock model
             session = boto3.Session(region_name=region)
-            bedrock_model = BedrockModel(
-                model_id=model_id,
-                boto_session=session,
-                cache_prompt="default",
-                cache_tools="default",
-            )
+            
+            # Configure caching based on model support (loaded from environment variable)
+            bedrock_model_params = {
+                "model_id": model_id,
+                "boto_session": session,
+            }
+
+            # Only enable caching for officially supported models
+            if supports_prompt_cache(model_id):
+                bedrock_model_params["cache_prompt"] = "default"
+
+                if supports_tools_cache(model_id):
+                    bedrock_model_params["cache_tools"] = "default"
+
+            bedrock_model = BedrockModel(**bedrock_model_params)
 
             # Process messages and prompt using utility functions
             processed_messages = process_messages(messages)

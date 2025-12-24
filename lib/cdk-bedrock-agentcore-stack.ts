@@ -4,6 +4,7 @@ import { DockerImageAsset, Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import { Construct } from 'constructs';
 import { AgentCoreRole } from './constructs/agent-core-role';
 import { ProjectParameters } from '../parameters';
+import { SUPPORTED_CACHE_FIELDS } from './common/prompt-cache-specs';
 
 export interface CdkBedrockAgentcoreStackProps extends cdk.StackProps {
   parameters: ProjectParameters;
@@ -40,7 +41,10 @@ export class CdkBedrockAgentcoreStack extends cdk.Stack {
       },
       roleArn: agentCoreRole.role.roleArn,
       protocolConfiguration: 'HTTP',
-      environmentVariables: environmentVariables,
+      environmentVariables: {
+        ...environmentVariables,
+        SUPPORTED_CACHE_FIELDS: JSON.stringify(SUPPORTED_CACHE_FIELDS),
+      },
     });
 
     runtime.node.addDependency(agentCoreRole);
