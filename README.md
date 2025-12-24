@@ -78,7 +78,38 @@ export const actualParameters: ProjectParameters = {
 };
 ```
 
-### 3. デプロイ
+### 3. x86 EC2でのARMイメージビルド設定（必要な場合）
+
+AgentCore RuntimeはARM64アーキテクチャのコンテナのみをサポートしています。x86（AMD64）のEC2インスタンスからデプロイする場合は、以下の設定が必要です。
+
+#### Docker Buildxとbinfmtのセットアップ
+
+```bash
+# QEMUとbinfmtをDockerで設定（ARM64エミュレーションを有効化）
+docker run --privileged --rm tonistiigi/binfmt --install arm64
+
+# Buildxビルダーの作成と使用
+docker buildx create --name mybuilder --use
+docker buildx inspect --bootstrap
+```
+
+> **注意**: `docker run --privileged --rm tonistiigi/binfmt --install arm64` コマンドはEC2インスタンスを再起動するたびに実行する必要があります。永続化したい場合は、起動スクリプトやsystemdサービスとして登録してください。
+
+#### 設定の確認
+
+```bash
+# ARM64エミュレーションが有効か確認
+docker buildx ls
+
+# 出力例：
+# NAME/NODE    DRIVER/ENDPOINT  STATUS   BUILDKIT PLATFORMS
+# mybuilder *  docker-container          
+#   mybuilder0 unix:///var/run/docker.sock running  v0.x.x   linux/amd64, linux/arm64, ...
+```
+
+`linux/arm64` がPLATFORMSに含まれていれば、ARM64イメージのビルドが可能です。
+
+### 4. デプロイ
 
 ```bash
 # 依存関係のインストール
@@ -92,7 +123,7 @@ npx cdk deploy
 ```
 
 
-### 4. クリーンアップ
+### 5. クリーンアップ
 
 ```bash
 npx cdk destroy
