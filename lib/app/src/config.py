@@ -72,7 +72,7 @@ def extract_model_info(model_info: Any) -> tuple[str, str]:
         model_id = model_info
         region = aws_creds.get("AWS_REGION", "us-east-1")
     else:
-        model_id = model_info.get("modelId", "us.anthropic.claude-3-5-sonnet-20241022-v2:0")
+        model_id = model_info.get("modelId", "us.anthropic.claude-haiku-4-5-20251001-v1:0")
         region = model_info.get("region", aws_creds.get("AWS_REGION", "us-east-1"))
 
     return model_id, region
